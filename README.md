@@ -16,6 +16,14 @@
 
 ## 🎬 Video Demo
 
+
+
+
+https://github.com/user-attachments/assets/262a41b2-cdcc-4abd-8c8e-4bdb1b566a03
+
+
+
+
 [![Watch the Demo](https://img.shields.io/badge/YouTube-Watch_Demo-red?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=INewAPHXa5c)
 
 > 📺 Watch the full demo walkthrough to see `binance&bybit&okx P2P auto_payment_bot` in action — from order detection to auto payment to bill verification to crypto release.
