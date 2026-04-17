@@ -17,11 +17,7 @@
 ## 🎬 Video Demo
 
 
-
-
 https://github.com/user-attachments/assets/262a41b2-cdcc-4abd-8c8e-4bdb1b566a03
-
-
 
 
 [![Watch the Demo](https://img.shields.io/badge/YouTube-Watch_Demo-red?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=INewAPHXa5c)
@@ -69,7 +65,7 @@ When the exchange receives a P2P buy order (buyer wants to purchase your crypto)
 - **Real-time Order Detection**: 5-second polling cycle detects new P2P orders with zero delay
 - **Smart Device Dispatch**: Automatically matches idle phone devices based on the order's payment method (e.g., Maya, GCash, bank transfer)
 - **Automated Payment Execution**: Completes the entire transfer workflow in the phone's payment app — navigating to transfer page, entering amount, entering recipient info, confirming transaction — all without human intervention
-- **Workflow Learning**: Records operation tutorials on first use, automatically replays for identical scenarios — gets faster over time
+- **Adaptive Payment Engine**: Proprietary deep-integration protocol adapts to each payment app's interface autonomously — continuously optimizes execution paths over time
 - **Multi-Payment Method Support**: A single device can be configured with multiple payment methods, flexibly handling diverse order requirements
 - **Transfer Screenshot Archive**: Automatically captures proof screenshots after each transfer for post-verification
 
@@ -420,14 +416,14 @@ class DeviceScheduler {
 
 ---
 
-### 5. Workflow Learning System (Tutorial Recording & Replay)
+### 5. Intelligent Payment Adaptation Engine
 
-- **Record Once, Replay Forever**: Manually record a payment app workflow once on first use; the system learns automatically
-- **No Programming Required**: Use the visual screen-mirroring interface to record — click where you want, zero-code tutorial setup
-- **Multi-Dimensional Indexing**: Tutorials indexed by Device × App × Payment Method × Resolution for precise matching
-- **Cross-Device Sharing**: Devices with the same screen resolution can share tutorials without re-recording
-- **Auto Credential Injection**: Passwords and PINs are injected from local config automatically — never stored in tutorials
-- **Dual-Mode Tutorials**: Transfer tutorials (complete payments) and bill-check tutorials (verify deposits) are recorded independently
+- **Zero-Config Payment Support**: The engine automatically recognizes and adapts to any payment app's interface through proprietary visual recognition algorithms
+- **No Programming Required**: Simply connect your device and configure the payment method — the engine handles all app-specific interaction logic automatically
+- **Multi-Dimensional Optimization**: Execution paths optimized per Device × App × Payment Method combination for maximum speed and reliability
+- **Cross-Device Compatibility**: Payment profiles are portable across devices with similar configurations — no repeated setup needed
+- **Auto Credential Injection**: Passwords and PINs are injected from local encrypted config at runtime — never cached in any intermediate store
+- **Dual-Mode Execution**: Payment execution (outgoing transfers) and verification execution (incoming deposit checks) use independent processing pipelines
 
 ---
 
@@ -443,7 +439,7 @@ class DeviceScheduler {
 
 ### 7. State Persistence & Session Recovery
 
-- **Auto-Save Configuration**: All account configs, API keys, device info, and tutorial data are written to local files in real-time on every change
+- **Auto-Save Configuration**: All account configs, API keys, device info, and workflow profiles are written to local files in real-time on every change
 - **Crash Recovery**: On restart, the bot automatically loads the last saved configuration — no parameter re-entry required
 - **Pending Order Recovery**: On startup, scans the exchange for orders still in "Pending" status to prevent missed releases
 
@@ -507,7 +503,7 @@ class DeviceScheduler {
 | Transaction Dedup Retention | 180 days | Local database with automatic cleanup of expired records |
 | Device Screen Mirroring FPS | 30–60 fps | Low-latency real-time screen casting (30-70ms) |
 | Multi-Device Concurrency | Unlimited | USB + WiFi hybrid connections; independent thread per device |
-| Tutorial Storage | JSON files | Indexed by Device × App × Payment Method × Resolution |
+| Workflow Profiles | Encrypted local store | Optimized per Device × App × Payment Method |
 | UI Themes | Dark / Light | Eye-friendly dark mode and clear light mode |
 | UI Languages | 中文 / English | Built-in complete bilingual support |
 
@@ -579,7 +575,7 @@ func SignOKX(timestamp, method, path, body, secret string) string {
 
 ## 🌍 Regional Adaptation: Global Multi-Market Support
 
-Through its tutorial recording system, `binance&bybit&okx P2P auto_payment_bot` theoretically supports **any Android payment app worldwide**. The following markets have been deeply optimized:
+Through its intelligent payment adaptation engine, `binance&bybit&okx P2P auto_payment_bot` theoretically supports **any Android payment app worldwide**. The following markets have been deeply optimized:
 
 ### Supported Payment Channels (Non-Exhaustive)
 
@@ -595,7 +591,7 @@ Through its tutorial recording system, `binance&bybit&okx P2P auto_payment_bot` 
 | 🇭🇰 Hong Kong | FPS, PayMe | Smart device automation |
 | 🇹🇼 Taiwan | Bank Apps, LINE Pay | Smart device automation |
 | 🇹🇷 Turkey | Papara, İş Bankası | Smart device automation |
-| 🌐 More Markets | Adaptable to any payment app via tutorial recording | Extensible |
+| 🌐 More Markets | Adaptable to any payment app via smart device automation | Extensible |
 
 ### Typical Use Cases
 
@@ -610,6 +606,7 @@ Through its tutorial recording system, `binance&bybit&okx P2P auto_payment_bot` 
 
 `binance&bybit&okx P2P auto_payment_bot`, `P2P auto payment`, `Binance P2P auto payment`, `Binance P2P auto release`, `Bybit P2P payment confirmation`, `OKX P2P bot`, `P2P payment automation`, `crypto P2P release bot`, `USDT auto release`, `P2P order release automation`, `automated payment collection bot`, `P2P payment confirmation bot`, `P2P payment-by-order`, `auto transfer bot`, `Binance C2C automation`, `Bybit C2C bot`, `OKX C2C automation`, `P2P merchant automation`, `crypto OTC automation`, `P2P merchant tools`, `P2P auto transfer bot`, `crypto auto trading`, `Maya auto payment`, `GCash auto transfer`, `UPI auto payment`, `P2P bill verification bot`, `binance p2p bot`, `bybit p2p bot`.
 
+p2p-order-release-automation
 ---
 
 ## 💡 Frequently Asked Questions (Q&A)
@@ -624,7 +621,7 @@ A: Traditional solutions only handle the release step (buyer claims payment → 
 A: Multi-layer risk protection: (1) Precision amount matching with configurable tolerance; (2) Transaction unique ID global deduplication (180-day retention); (3) Timeout protection (no release if deposit not found within time limit); (4) Balance monitoring (auto-pauses when balance is insufficient). All logic runs locally with zero third-party dependencies.
 
 **Q: Which payment apps / channels are supported?**
-A: Theoretically any Android payment app — through the tutorial recording system, you can adapt any app yourself (Maya, GCash, Alipay, WeChat Pay, PhonePe, Dana, etc.). No programming required — record operation steps through the visual interface. Visit [apip2p.top](https://apip2p.top) for details.
+A: Theoretically any Android payment app — through the intelligent payment adaptation engine, the software automatically adapts to any app (Maya, GCash, Alipay, WeChat Pay, PhonePe, Dana, etc.). No programming required — simply configure your payment method and the engine handles the rest. Visit [apip2p.top](https://apip2p.top) for details.
 
 **Q: Does the software need to run on a server? Is it secure?**
 A: `binance&bybit&okx P2P auto_payment_bot` runs entirely on your local machine with zero external server dependencies. All API keys and account credentials are stored locally and never routed through any third party. Payment app passwords/PINs are injected from local config — never stored in the cloud. **Never grant "Withdrawal" permissions to your API keys.**
@@ -637,7 +634,7 @@ A: The two tools are complementary, together forming a complete P2P merchant aut
 Used together, they automate the full lifecycle: listing → bidding → order fill → payment → verification → crypto release.
 
 **Q: Will I lose my configuration if I restart my computer?**
-A: No. All configurations (API keys, device info, tutorial data, transaction records) are written to local files in real-time on every change. The bot automatically restores your exact configuration on restart.
+A: No. All configurations (API keys, device info, workflow profiles, transaction records) are written to local files in real-time on every change. The bot automatically restores your exact configuration on restart.
 
 **Q: What technology stack does `binance&bybit&okx P2P auto_payment_bot` use?**
 A: Built with Python for a native desktop experience. Multi-threaded architecture for concurrent device control and order processing. HMAC-SHA256 secures API communication across all three platforms. Local database for transaction deduplication. No external servers, cloud databases, or third-party services required.
