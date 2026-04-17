@@ -8,13 +8,17 @@
 
 ---
 
-# binance-p2p-bot：binance&bybit&okx P2P auto_payment_bot: Bot Thanh Toán Tự Động Theo Đơn · Xác Minh Hóa Đơn · Giải Phóng Crypto
+# binance&bybit&okx P2P auto_payment_bot: Bot Thanh Toán Tự Động Theo Đơn · Xác Minh Hóa Đơn · Giải Phóng Crypto
 
 > Công cụ tự động hóa chuyên nghiệp dành cho thương nhân P2P Binance, Bybit & OKX — **thanh toán tự động theo đơn**, **xác minh hóa đơn thông minh**, **giải phóng crypto trong mili giây**, xử lý song song đa thiết bị.
 
 # [Bot Thanh Toán & Giải Phóng Tự Động P2P (Binance & Bybit & OKX) Trang Chủ](https://apip2p.top)
 
 ## 🎬 Video Demo
+
+
+https://github.com/user-attachments/assets/262a41b2-cdcc-4abd-8c8e-4bdb1b566a03
+
 
 [![Xem Demo](https://img.shields.io/badge/YouTube-Xem_Demo-red?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=INewAPHXa5c)
 
@@ -60,7 +64,7 @@ Trong giao dịch P2P, thương nhân phải đối mặt với các thao tác l
 - **Phát Hiện Đơn Hàng Real-time**: Chu kỳ polling 5 giây
 - **Điều Phối Thiết Bị Thông Minh**: Tự động khớp thiết bị rảnh theo phương thức thanh toán
 - **Thực Thi Thanh Toán Tự Động**: Hoàn tất toàn bộ quy trình chuyển khoản
-- **Học Quy Trình**: Ghi lại hướng dẫn lần đầu, tự động phát lại sau đó
+- **Bộ Thanh Toán Thích Ứng**: Bộ giao thức thông minh tự động thích ứng với giao diện của từng ứng dụng thanh toán
 - **Hỗ Trợ Đa Phương Thức**: Một thiết bị, nhiều phương thức thanh toán
 - **Lưu Trữ Ảnh Chụp**: Tự động chụp bằng chứng sau mỗi giao dịch
 
@@ -95,11 +99,11 @@ Trong giao dịch P2P, thương nhân phải đối mặt với các thao tác l
 
 ---
 
-### 5. Hệ Thống Học Quy Trình
+### 5. Bộ Thích Ứng Thanh Toán Thông Minh
 
-- **Ghi Một Lần, Phát Lại Mãi Mãi**
-- **Không Cần Lập Trình**: Giao diện trực quan để ghi
-- **Chỉ Mục Đa Chiều**: Thiết bị × Ứng dụng × Phương thức × Độ phân giải
+- **Hỗ Trợ Thanh Toán Không Cần Cấu Hình**: Bộ máy tự động nhận diện và thích ứng với giao diện của bất kỳ ứng dụng thanh toán nào
+- **Không Cần Lập Trình**: Chỉ cần kết nối thiết bị và cấu hình phương thức thanh toán
+- **Tối Ưu Hóa Đa Chiều**: Đường dẫn thực thi được tối ưu theo Thiết bị × Ứng dụng × Phương thức thanh toán
 
 ---
 
@@ -133,7 +137,7 @@ Trong giao dịch P2P, thương nhân phải đối mặt với các thao tác l
 | 🇻🇳 Việt Nam | MoMo, ZaloPay, Vietcombank | Tự động hóa thông minh |
 | 🇹🇭 Thái Lan | PromptPay, TrueMoney | Tự động hóa thông minh |
 | 🇹🇷 Thổ Nhĩ Kỳ | Papara, İş Bankası | Tự động hóa thông minh |
-| 🌐 Thị Trường Khác | Có thể thích ứng qua ghi hướng dẫn | Mở rộng |
+| 🌐 Thị Trường Khác | Có thể thích ứng qua tự động hóa thiết bị thông minh | Mở rộng |
 
 ---
 
