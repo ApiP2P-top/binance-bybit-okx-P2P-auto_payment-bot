@@ -8,7 +8,7 @@
 
 ---
 
-# binance&bybit&okx P2P auto_payment_bot: Bot Pembayaran Otomatis per Pesanan · Verifikasi Tagihan · Pelepasan Crypto
+# binance-p2p-bot：binance&bybit&okx P2P auto_payment_bot: Bot Pembayaran Otomatis per Pesanan · Verifikasi Tagihan · Pelepasan Crypto
 
 > Mesin otomatisasi profesional untuk merchant P2P Binance, Bybit & OKX — **pembayaran otomatis per pesanan**, **verifikasi tagihan cerdas**, **pelepasan crypto dalam milidetik**, dengan pemrosesan paralel multi-perangkat.
 
