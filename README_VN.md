@@ -8,7 +8,7 @@
 
 ---
 
-# binance&bybit&okx P2P auto_payment_bot: Bot Thanh Toán Tự Động Theo Đơn · Xác Minh Hóa Đơn · Giải Phóng Crypto
+# binance-p2p-bot：binance&bybit&okx P2P auto_payment_bot: Bot Thanh Toán Tự Động Theo Đơn · Xác Minh Hóa Đơn · Giải Phóng Crypto
 
 > Công cụ tự động hóa chuyên nghiệp dành cho thương nhân P2P Binance, Bybit & OKX — **thanh toán tự động theo đơn**, **xác minh hóa đơn thông minh**, **giải phóng crypto trong mili giây**, xử lý song song đa thiết bị.
 
