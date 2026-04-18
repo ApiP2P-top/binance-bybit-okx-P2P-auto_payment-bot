@@ -67,6 +67,88 @@ P2P ट्रेडिंग में व्यापारियों को 
 - **मल्टी-पेमेंट विधि**: एक डिवाइस, कई भुगतान विधियां
 - **स्क्रीनशॉट भंडारण**: प्रत्येक लेनदेन के बाद स्वचालित सबूत कैप्चर
 
+#### 💡 कार्यान्वयन अवधारणा (ट्रांसफर शेड्यूलिंग इंजन)
+
+```python
+# [Pseudocode] Order detection → device matching → auto transfer scheduling pipeline
+import asyncio
+from dataclasses import dataclass
+from typing import Optional, List
+
+@dataclass
+class TransferTask:
+    order_id:       str
+    amount:         float
+    currency:       str
+    payee_name:     str
+    payee_account:  str
+    payment_method: str
+    status:         str
+
+class TransferScheduler:
+    POLL_INTERVAL = 5
+
+    def __init__(self, exchange_clients: dict, device_pool: 'DevicePool'):
+        self.exchanges   = exchange_clients
+        self.device_pool = device_pool
+
+    async def run(self):
+        while True:
+            for platform, client in self.exchanges.items():
+                orders = await client.get_pending_orders()
+                for order in orders:
+                    if self._is_new_order(order):
+                        await self._dispatch(order)
+            await asyncio.sleep(self.POLL_INTERVAL)
+
+    async def _dispatch(self, order) -> None:
+        device = self.device_pool.find_idle_device(order.payment_method)
+        if not device:
+            return
+        task = TransferTask(
+            order_id=order.id, amount=order.fiat_amount,
+            payee_name=order.counterparty, payee_account=order.account,
+            payment_method=order.payment_method, status="pending",
+        )
+        await device.execute_transfer(task)
+```
+
+```javascript
+// [Pseudocode] Node.js style — Order polling and device dispatch
+class TransferScheduler {
+    constructor(exchangeClients, devicePool) {
+        this.exchanges  = exchangeClients;
+        this.devicePool = devicePool;
+        this.pollInterval = 5000;
+    }
+
+    async start() {
+        while (true) {
+            for (const [platform, client] of Object.entries(this.exchanges)) {
+                const orders = await client.getPendingOrders();
+                for (const order of orders) {
+                    if (this.isNewOrder(order)) {
+                        await this.dispatch(order);
+                    }
+                }
+            }
+            await this.sleep(this.pollInterval);
+        }
+    }
+
+    async dispatch(order) {
+        const device = this.devicePool.findIdleDevice(order.paymentMethod);
+        if (!device) return;
+        await device.executeTransfer({
+            orderId: order.id,
+            amount: order.fiatAmount,
+            payeeName: order.counterparty,
+            paymentMethod: order.paymentMethod,
+        });
+    }
+}
+```
+
 ---
 
 ### 2. बुद्धिमान बिल सत्यापन
@@ -77,6 +159,69 @@ P2P ट्रेडिंग में व्यापारियों को 
 - **लेनदेन ID निष्कर्षण**: Reference Number / लेनदेन कोड पढ़ें
 - **एंटी-रीप्ले सुरक्षा**: प्रत्येक ID रिकॉर्ड — एक भुगतान दो बार रिलीज़ ट्रिगर नहीं कर सकता
 
+#### 💡 कार्यान्वयन अवधारणा (जमा सत्यापन इंजन)
+
+```go
+// [Pseudocode] Go style — Deposit verification with replay-attack protection
+package verifier
+
+type BillVerifyResult struct {
+    Matched     bool
+    Amount      float64
+    SenderName  string
+    UniqueID    string
+}
+
+type BillVerifier struct {
+    archive    *BillArchive
+    tolerance  float64
+}
+
+func (v *BillVerifier) Verify(order P2POrder) (*BillVerifyResult, error) {
+    bills, err := v.navigateToBillList(order.PaymentApp)
+    if err != nil {
+        return nil, err
+    }
+    for _, bill := range bills {
+        if math.Abs(bill.Amount - order.FiatAmount) <= v.tolerance {
+            detail := v.openBillDetail(bill)
+            if v.archive.Exists(detail.UniqueID) {
+                continue
+            }
+            return &BillVerifyResult{
+                Matched: true, Amount: detail.Amount,
+                SenderName: detail.SenderName, UniqueID: detail.UniqueID,
+            }, nil
+        }
+    }
+    return &BillVerifyResult{Matched: false}, nil
+}
+```
+
+```typescript
+// [Pseudocode] TypeScript style — Bill verification service
+interface BillDetail {
+    amount: number; senderName: string; uniqueId: string; timestamp: Date;
+}
+
+class BillVerifyService {
+    private archive: BillArchive;
+    private tolerance = 0.02;
+
+    async verify(order: P2POrder): Promise<VerifyResult> {
+        const bills = await this.navigateToBillList(order.paymentApp);
+        const matched = bills.find(bill =>
+            Math.abs(bill.amount - order.fiatAmount) <= this.tolerance
+            && !this.archive.exists(bill.uniqueId)
+        );
+        if (!matched) return { success: false };
+        this.archive.record(matched.uniqueId, order.orderId);
+        return { success: true, amount: matched.amount,
+            senderName: matched.senderName, uniqueId: matched.uniqueId };
+    }
+}
+```
+
 ---
 
 ### 3. स्वचालित क्रिप्टो रिलीज़
@@ -85,6 +230,69 @@ P2P ट्रेडिंग में व्यापारियों को 
 - **परिणाम सत्यापन**: ऑर्डर स्थिति जांच
 - **एक्सपोनेंशियल रीट्राई**: अधिकतम 3 बार (2/4/8 सेकंड)
 - **तीन प्लेटफ़ॉर्म स्विचर**: Binance / Bybit / OKX
+
+#### 💡 कार्यान्वयन अवधारणा (क्रॉस-प्लेटफ़ॉर्म रिलीज़ एक्जीक्यूटर)
+
+```python
+# [Pseudocode] Cross-platform release executor
+import asyncio, logging
+logger = logging.getLogger("release_executor")
+
+class PlatformAdapterFactory:
+    @staticmethod
+    def create(platform: str, credentials: dict):
+        if platform == "binance": return BinanceP2PAdapter(credentials)
+        elif platform == "bybit": return BybitP2PAdapter(credentials)
+        elif platform == "okx": return OkxP2PAdapter(credentials)
+        raise ValueError(f"Unsupported platform: {platform}")
+
+class ReleaseExecutor:
+    MAX_RETRIES = 3
+    RETRY_BASE_S = 2
+
+    async def release(self, platform: str, order_id: str, verify_result: dict) -> bool:
+        adapter = PlatformAdapterFactory.create(platform, self.credentials)
+        for attempt in range(self.MAX_RETRIES):
+            try:
+                resp = await adapter.release_order(order_id)
+                if resp.success:
+                    confirmed = await self._poll_completion(adapter, order_id)
+                    if confirmed:
+                        logger.info(f"[RELEASED] {platform} order {order_id}")
+                        return True
+            except Exception as e:
+                wait = self.RETRY_BASE_S ** (attempt + 1)
+                await asyncio.sleep(wait)
+        return False
+```
+
+```rust
+// [Pseudocode] Rust style — Release execution with retry
+use std::time::Duration;
+
+struct ReleaseExecutor { max_retries: u32, retry_base: Duration }
+
+impl ReleaseExecutor {
+    async fn release(&self, platform: &str, order_id: &str) -> Result<bool, Error> {
+        let adapter = create_platform_adapter(platform)?;
+        for attempt in 0..self.max_retries {
+            match adapter.release_order(order_id).await {
+                Ok(resp) if resp.success => {
+                    if self.poll_completion(&adapter, order_id).await? {
+                        return Ok(true);
+                    }
+                }
+                Err(e) => {
+                    let wait = self.retry_base * 2u32.pow(attempt);
+                    tokio::time::sleep(wait).await;
+                }
+                _ => {}
+            }
+        }
+        Ok(false)
+    }
+}
+```
 
 ---
 
@@ -95,6 +303,62 @@ P2P ट्रेडिंग में व्यापारियों को 
 - **बुद्धिमान असाइनमेंट**: ऐप के अनुसार स्वचालित डिवाइस मिलान
 - **स्वतंत्र कतार**: प्रत्येक डिवाइस की अपनी FIFO कतार
 - **स्थिति निगरानी**: कनेक्शन, वर्तमान कार्य, शेष राशि
+- **वर्कफ़्लो अलगाव**: विभिन्न डिवाइस × ऐप × भुगतान विधियों के लिए अलग-अलग संचालन प्रवाह
+
+#### 💡 कार्यान्वयन अवधारणा (समानांतर शेड्यूलर)
+
+```python
+# [Pseudocode] Multi-device task scheduler
+from dataclasses import dataclass, field
+from typing import Dict, List
+from collections import deque
+
+@dataclass
+class Device:
+    serial: str
+    alias: str
+    status: str
+    supported_apps: List[str]
+    task_queue: deque = field(default_factory=deque)
+
+class DeviceScheduler:
+    def __init__(self):
+        self.devices: Dict[str, Device] = {}
+
+    def find_idle_device(self, payment_method: str) -> Device | None:
+        for device in self.devices.values():
+            if device.status == "idle" and payment_method in device.supported_apps:
+                return device
+        return None
+
+    def enqueue_task(self, task: 'TransferTask') -> bool:
+        device = self.find_idle_device(task.payment_method)
+        if device:
+            device.task_queue.append(task)
+            return True
+        return False
+```
+
+```javascript
+// [Pseudocode] JavaScript style — Device manager
+class DeviceScheduler {
+    constructor() { this.devices = new Map(); }
+
+    findIdleDevice(paymentMethod) {
+        for (const device of this.devices.values()) {
+            if (device.status === 'idle' && device.supportedApps.includes(paymentMethod))
+                return device;
+        }
+        return null;
+    }
+
+    enqueueTask(task) {
+        const device = this.findIdleDevice(task.paymentMethod);
+        if (device) { device.taskQueue.push(task); device.status = 'busy'; return true; }
+        return false;
+    }
+}
+```
 
 ---
 
@@ -103,6 +367,8 @@ P2P ट्रेडिंग में व्यापारियों को 
 - **बिना कॉन्फ़िगरेशन भुगतान सहायता**: इंजन स्वचालित रूप से किसी भी भुगतान ऐप के इंटरफ़ेस को पहचानता और अनुकूलित होता है
 - **कोडिंग की आवश्यकता नहीं**: बस अपना डिवाइस कनेक्ट करें और भुगतान विधि कॉन्फ़िगर करें
 - **मल्टी-डायमेंशनल ऑप्टिमाइज़ेशन**: डिवाइस × ऐप × भुगतान विधि के अनुसार ऑप्टिमाइज़ की गई निष्पादन पथ
+- **स्वचालित क्रेडेंशियल इंजेक्शन**: पासवर्ड और PIN रनटाइम पर स्थानीय एन्क्रिप्टेड कॉन्फ़िगरेशन से इंजेक्ट किए जाते हैं
+- **दोहरे-मोड निष्पादन**: भुगतान निष्पादन (आउटगोइंग ट्रांसफ़र) और सत्यापन (इनकमिंग डिपॉज़िट जाँच) स्वतंत्र पाइपलाइन का उपयोग करते हैं
 
 ---
 
@@ -112,6 +378,7 @@ P2P ट्रेडिंग में व्यापारियों को 
 - **सटीक राशि मिलान**: सहनशीलता से अधिक होने पर अस्वीकार
 - **टाइमआउट सुरक्षा**: जमा नहीं मिलने पर रिलीज़ नहीं
 - **शेष राशि निगरानी**: अपर्याप्त शेष पर स्वचालित रुकावट
+- **पूर्णतः स्थानीय संग्रह**: सभी लेनदेन रिकॉर्ड स्थानीय रूप से संग्रहीत (180-दिन प्रतिधारण, स्वचालित सफाई)
 
 ---
 
@@ -123,7 +390,106 @@ P2P ट्रेडिंग में व्यापारियों को 
 
 ---
 
-## 🌍 क्षेत्रीय अनुकूलन
+## �️ सिस्टम आर्किटेक्चर
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                     Desktop GUI Main Window                       │
+│  ┌───────────┐ ┌────────────┐ ┌────────────┐ ┌───────────┐  │
+│  │ Exchange  │ │   Device   │ │  Screen    │ │ Log &     │  │
+│  │ Manager  │ │  Manager   │ │  Mirror    │ │ Audit     │  │
+│  └─────┬─────┘ └─────┬──────┘ └─────┬──────┘ └───────────┘  │
+│        │             │             │                             │
+│  ┌────▼───────────▼───────────▼──────────────────┐    │
+│  │                Signal / Slot Event Bus                   │    │
+│  └────┬───────────┬───────────┬──────────────────┘    │
+│       │              │              │                              │
+│  ┌────▼────┐ ┌─────▼─────┐ ┌────▼─────┐ ┌────────────┐   │
+│  │  Order   │ │  Transfer  │ │   Bill    │ │   State    │   │
+│  │  Poller  │ │  Executor  │ │ Verifier  │ │  Persist   │   │
+│  │(5s cycle)│ │(pay-by-   │ │(deposit   │ │ (JSON/DB)  │   │
+│  │          │ │ order)    │ │ verify)   │ │            │   │
+│  └──────────┘ └───────────┘ └──────────┘ └────────────┘   │
+│       │              │              │                              │
+│  ┌────▼───────────▼───────────▼──────────────────┐    │
+│  │        Anti-Replay & Risk Control Layer              │    │
+│  │  ┌───────────┐ ┌───────────┐ ┌────────────────┐   │    │
+│  │  │Amount     │ │Transaction│ │Balance Monitor │   │    │
+│  │  │Tolerance  │ │ID Dedup   │ │& Timeout Guard │   │    │
+│  │  └───────────┘ └───────────┘ └────────────────┘   │    │
+│  └──────────────────────────────────────────────────┘    │
+└───────────────────────────┬────────────────────────────────────┘
+                            │
+              ┌───────────▼──────────────┐
+              │  Exchange API Adapter Layer  │
+              │ ┌───────┐┌──────┐┌──────┐ │
+              │ │Binance││Bybit ││ OKX  │ │
+              │ └───────┘└──────┘└──────┘ │
+              └──────────────────────────┘
+```
+
+---
+
+## ⚙️ तकनीकी विनिर्देश
+
+| घटक | पैरामीटर | विवरण |
+|----------|-----------|----------|
+| Polling चक्र | 5,000 ms | प्रति एक्सचेंज स्वतंत्र Polling |
+| राशि सहनशीलता | 0.01–0.10 | कॉन्फ़िगर करने योग्य |
+| रीट्राई अंतराल | Exp. backoff 2/4/8s | अधिकतम 3 बार |
+| Dedup प्रतिधारण | 180 दिन | स्वचालित सफाई |
+| मिररिंग FPS | 30–60 fps | कम विलंब (30-70ms) |
+| Concurrency | असीमित | USB + WiFi |
+| Workflow Profiles | एन्क्रिप्टेड स्थानीय संग्रह | डिवाइस × ऐप × विधि |
+| UI थीम | डार्क / लाइट | दो मोड |
+| UI भाषा | 中文 / English | द्विभाषी |
+
+### API प्रमाणीकरण और अनुरोध हस्ताक्षर
+
+```python
+# [Pseudocode] HMAC-SHA256 Request Signing
+import hashlib, hmac, base64
+
+class MultiPlatformAuth:
+    def sign_binance(self, params: dict, secret: str) -> str:
+        query = "&".join(f"{k}={v}" for k, v in sorted(params.items()))
+        return hmac.new(secret.encode(), query.encode(), hashlib.sha256).hexdigest()
+
+    def sign_bybit(self, timestamp: str, api_key: str, payload: str, secret: str) -> str:
+        sign_str = f"{timestamp}{api_key}5000{payload}"
+        return hmac.new(secret.encode(), sign_str.encode(), hashlib.sha256).hexdigest()
+
+    def sign_okx(self, timestamp: str, method: str, path: str, body: str, secret: str) -> str:
+        sign_str = f"{timestamp}{method}{path}{body}"
+        return base64.b64encode(hmac.new(secret.encode(), sign_str.encode(), hashlib.sha256).digest()).decode()
+```
+
+```go
+// [Pseudocode] Go style — Multi-platform API signing
+package auth
+import ("crypto/hmac"; "crypto/sha256"; "encoding/base64"; "encoding/hex"; "fmt"; "sort"; "strings")
+
+func SignBinance(params map[string]string, secret string) string {
+    keys := make([]string, 0)
+    for k := range params { keys = append(keys, k) }
+    sort.Strings(keys)
+    var parts []string
+    for _, k := range keys { parts = append(parts, fmt.Sprintf("%s=%s", k, params[k])) }
+    mac := hmac.New(sha256.New, []byte(secret))
+    mac.Write([]byte(strings.Join(parts, "&")))
+    return hex.EncodeToString(mac.Sum(nil))
+}
+
+func SignOKX(timestamp, method, path, body, secret string) string {
+    mac := hmac.New(sha256.New, []byte(secret))
+    mac.Write([]byte(timestamp + method + path + body))
+    return base64.StdEncoding.EncodeToString(mac.Sum(nil))
+}
+```
+
+---
+
+## �🌍 क्षेत्रीय अनुकूलन
 
 `binance&bybit&okx P2P auto_payment_bot` सैद्धांतिक रूप से **विश्व भर के किसी भी Android भुगतान ऐप** का समर्थन करता है।
 
@@ -136,7 +502,17 @@ P2P ट्रेडिंग में व्यापारियों को 
 | 🇻🇳 वियतनाम | MoMo, ZaloPay, Vietcombank | बुद्धिमान स्वचालन |
 | 🇹🇭 थाईलैंड | PromptPay, TrueMoney | बुद्धिमान स्वचालन |
 | 🇹🇷 तुर्की | Papara, İş Bankası | बुद्धिमान स्वचालन |
+| �🇷 दक्षिण कोरिया | Toss, KakaoPay | स्मार्ट ऑटोमेशन |
+| 🇭🇰 हांगकांग | FPS, PayMe | स्मार्ट ऑटोमेशन |
+| 🇹🇼 ताइवान | बैंक ऐप्स, LINE Pay | स्मार्ट ऑटोमेशन |
 | 🌐 अन्य बाज़ार | स्मार्ट डिवाइस ऑटोमेशन से अनुकूलन | विस्तार योग्य |
+
+### सामान्य उपयोग के मामले
+
+- 📈 **उच्च मात्रा वाले व्यापारी**: प्रतिदिन दर्जनों से सैकड़ों P2P ऑर्डर प्रोसेस करना
+- 🌙 **रात्रि अनअटेंडेड संचालन**: गैर-कार्य घंटों में स्वचालित ऑर्डर प्रोसेसिंग
+- 📱 **समानांतर प्रोसेसिंग**: कई फ़ोन एक साथ अलग-अलग ऐप चलाते हुए
+- 🔗 **पूर्ण ऑटोमेशन लूप**: `binance_p2p_bot` के साथ — लिस्टिंग से क्रिप्टो रिलीज़ तक
 
 ---
 
@@ -158,6 +534,24 @@ P2P ट्रेडिंग में व्यापारियों को 
 उ: एक-दूसरे के पूरक:
 - [`binance_p2p_bot`](https://github.com/ApiP2P-top/binance-p2p-bot): स्वचालित मूल्य निर्धारण, रैंकिंग (**ऑर्डर-पूर्व प्रबंधन**)
 - `binance&bybit&okx P2P auto_payment_bot`: भुगतान, सत्यापन, स्वचालित रिलीज़ (**ऑर्डर भुगतान**)
+
+**प्र: "ऑर्डर अनुसार स्वचालित भुगतान" और पारंपरिक "Auto Release" में क्या अंतर है?**
+उ: पारंपरिक समाधान केवल रिलीज़ चरण को संभालते हैं। `binance&bybit&okx P2P auto_payment_bot` आगे बढ़ता है — भुगतान ऐप में **स्वचालित रूप से ट्रांसफर निष्पादित** करता है। यह पूर्ण त्रिकोण है: **भुगतान + सत्यापन + रिलीज़**।
+
+**प्र: सॉफ़्टवेयर गलत रिलीज़ को कैसे रोकता है?**
+उ: बहु-स्तरीय सुरक्षा: (1) सटीक राशि मिलान; (2) वैश्विक लेनदेन ID डीडुप्लिकेशन (180 दिन); (3) टाइमआउट सुरक्षा; (4) शेष राशि निगरानी।
+
+**प्र: कौन से भुगतान ऐप समर्थित हैं?**
+उ: सैद्धांतिक रूप से कोई भी Android ऐप — बुद्धिमान अनुकूलन इंजन के माध्यम से। बस भुगतान विधि कॉन्फ़िगर करें, इंजन बाकी संभालता है। विवरण के लिए [apip2p.top](https://apip2p.top) देखें।
+
+**प्र: रीस्टार्ट करने पर कॉन्फ़िगरेशन खो जाएगा?**
+उ: नहीं। सभी कॉन्फ़िगरेशन स्थानीय रूप से रीयल-टाइम सहेजे जाते हैं। बॉट स्टार्टअप पर स्वचालित रूप से कॉन्फ़िगरेशन पुनर्प्राप्त करता है।
+
+**प्र: कौन सा तकनीकी स्टैक उपयोग किया गया है?**
+उ: नेटिव डेस्कटॉप अनुभव के लिए Python। मल्टी-थ्रेडेड आर्किटेक्चर। API के लिए HMAC-SHA256। स्थानीय डेटाबेस।
+
+**प्र: क्या वोलाटाइल एसेट (BTC, ETH) समर्थित हैं?**
+उ: हाँ। भुगतान तर्क फ़िएट राशि पर संचालित होता है। BTC/ETH के लिए [`binance_p2p_bot`](https://github.com/ApiP2P-top/binance-p2p-bot) के Spot Market Sync की सिफ़ारिश की जाती है।
 
 ---
 
